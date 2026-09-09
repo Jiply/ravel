@@ -1,0 +1,17 @@
+{
+  "name": "ravel",
+  "version": "0.1.0",
+  "description": "Visually group Git commits and send a precise squash instruction to Codex.",
+  "author": { "name": "Local developer" },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Ravel",
+    "shortDescription": "A cleaner Git history, one click at a time.",
+    "longDescription": "Open a repository's commit chain inside Codex. Squash adjacent older commits into newer targets, preview the instruction, and confirm to send it to your current task.",
+    "developerName": "Local developer",
+    "category": "Productivity",
+    "capabilities": ["Interactive"],
+    "brandColor": "#000000",
+    "defaultPrompt": ["Use $ravel to open this repository's commit chain."]
+  }
+}

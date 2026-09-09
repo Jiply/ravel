@@ -1,0 +1,5 @@
+interface:
+  display_name: 'Ravel'
+  short_description: 'Visually group Git commits to squash in Codex'
+  default_prompt: "Use $ravel to open this repository's commit chain."
+  brand_color: '#000000'

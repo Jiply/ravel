@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Ravel</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          14px -apple-system,
+          BlinkMacSystemFont,
+          'Segoe UI',
+          sans-serif;
+        color: #f5f5f7;
+        background: #000;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+      }
+      button {
+        font: inherit;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+      }
+      button:disabled {
+        cursor: default;
+        opacity: 0.3;
+      }
+      button:focus-visible,
+      summary:focus-visible {
+        outline: 2px solid white;
+        outline-offset: 4px;
+      }
+      .app {
+        max-width: 1080px;
+        margin: auto;
+        padding: 32px;
+      }
+      header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      .title {
+        display: flex;
+        align-items: center;
+        gap: 11px;
+      }
+      .mark {
+        width: 28px;
+        height: 28px;
+      }
+      h1 {
+        font-size: 28px;
+        font-weight: 630;
+        letter-spacing: -1.1px;
+        margin: 0;
+      }
+      .subtitle {
+        color: #929296;
+        margin: 9px 0 0;
+        line-height: 1.5;
+      }
+      .repo {
+        text-align: right;
+        min-width: 0;
+        padding-top: 4px;
+      }
+      .repo-name {
+        display: block;
+        font-weight: 550;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .repo-heading {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 6px;
+      }
+      .repo-info {
+        position: relative;
+        display: flex;
+      }
+      .info-button {
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: 0;
+        border-radius: 50%;
+        background: transparent;
+        color: #929296;
+      }
+      .info-button:hover,
+      .info-button:focus-visible {
+        color: #f5f5f7;
+      }
+      .repo-path {
+        display: none;
+        position: absolute;
+        z-index: 3;
+        right: 0;
+        top: 100%;
+        width: max-content;
+        max-width: min(360px, calc(100vw - 32px));
+        padding: 10px 12px;
+        border-radius: 8px;
+        background: #262628;
+        color: #dedee2;
+        text-align: left;
+        font:
+          11px/1.5 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        overflow-wrap: anywhere;
+      }
+      .repo-info:hover .repo-path,
+      .repo-info:focus-within .repo-path,
+      .repo-info[data-open='true'] .repo-path {
+        display: block;
+      }
+      .branch {
+        margin-top: 8px;
+        color: #98989e;
+        font:
+          12px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+      }
+      .toolbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: #8e8e93;
+        margin-bottom: 14px;
+        font-size: 12px;
+      }
+      .toolbar-left {
+        display: flex;
+        gap: 9px;
+        align-items: center;
+      }
+      .dot {
+        width: 3px;
+        height: 3px;
+        border-radius: 100%;
+        background: #636366;
+      }
+      .quiet {
+        border: 0;
+        background: transparent;
+        color: #b6b6bb;
+        padding: 6px 8px;
+        border-radius: 6px;
+      }
+      .quiet:hover:enabled {
+        background: #1c1c1e;
+        color: white;
+      }
+      .history {
+        background: #101011;
+        border-radius: 16px;
+        overflow: auto;
+        max-height: 530px;
+        scrollbar-color: #343437 transparent;
+        scrollbar-width: thin;
+      }
+      .row {
+        position: relative;
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 16px;
+        padding: 18px 22px;
+        min-height: 85px;
+      }
+      .row + .row:after {
+        content: '';
+        position: absolute;
+        left: 60px;
+        right: 22px;
+        top: 0;
+        height: 1px;
+        background: #ffffff09;
+      }
+      .rail {
+        position: relative;
+        align-self: stretch;
+        display: grid;
+        place-items: center;
+      }
+      .rail:before {
+        content: '';
+        position: absolute;
+        top: -18px;
+        bottom: -18px;
+        width: 1px;
+        background: #38383b;
+      }
+      .row:first-child .rail:before {
+        top: 50%;
+      }
+      .row:last-child .rail:before {
+        bottom: 50%;
+      }
+      .node {
+        z-index: 1;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #101011;
+        border: 1.5px solid #77777d;
+      }
+      .row:first-child .node,
+      .target .node {
+        background: #f5f5f7;
+        border-color: #f5f5f7;
+        box-shadow: 0 0 0 4px #ffffff0a;
+      }
+      .joined {
+        background: #1b1b1e;
+      }
+      .joined .rail:before {
+        background: #d5d5da;
+        width: 2px;
+      }
+      .joined .node {
+        width: 5px;
+        height: 5px;
+        border: 0;
+        background: #dedee2;
+      }
+      .subject {
+        font-size: 14px;
+        font-weight: 510;
+        line-height: 1.5;
+        overflow-wrap: anywhere;
+      }
+      .meta {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        flex-wrap: wrap;
+        color: #838389;
+        font-size: 11px;
+        margin-top: 5px;
+      }
+      code {
+        font:
+          11px ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        letter-spacing: 0.1px;
+      }
+      .badge {
+        border-radius: 4px;
+        padding: 2px 5px;
+        background: #ffffff0c;
+        color: #b4b4ba;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+      }
+      .join {
+        border: 0;
+        border-radius: 8px;
+        color: #d5d5da;
+        background: #ffffff09;
+        padding: 9px 11px;
+        font-size: 11px;
+        white-space: nowrap;
+        transition: background 120ms;
+      }
+      .join:hover {
+        color: white;
+        background: #ffffff16;
+      }
+      .joined .join {
+        background: #ffffff0c;
+      }
+      .boundary {
+        font-size: 11px;
+        color: #696970;
+        padding: 9px 0;
+      }
+      .end-note {
+        padding: 14px 22px;
+        font-size: 11px;
+        color: #85858b;
+        background: #141415;
+      }
+      footer {
+        margin-top: 22px;
+      }
+      .actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 18px;
+      }
+      .summary-count {
+        font-size: 14px;
+        font-weight: 550;
+      }
+      .summary-hint {
+        font-size: 12px;
+        color: #85858b;
+        margin-top: 5px;
+        line-height: 1.5;
+      }
+      .confirm {
+        border: 0;
+        border-radius: 10px;
+        padding: 12px 19px;
+        background: #f5f5f7;
+        color: #151517;
+        font-size: 13px;
+        font-weight: 650;
+        white-space: nowrap;
+      }
+      .confirm:hover:enabled {
+        background: #dcdce0;
+      }
+      details {
+        margin-top: 20px;
+        border-top: 1px solid #ffffff10;
+        padding-top: 14px;
+      }
+      summary {
+        cursor: pointer;
+        color: #96969d;
+        font-size: 12px;
+        width: fit-content;
+      }
+      pre {
+        color: #c1c1c7;
+        background: #101011;
+        border-radius: 10px;
+        padding: 16px;
+        font:
+          11px/1.7 ui-monospace,
+          SFMono-Regular,
+          Menlo,
+          monospace;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        max-height: 260px;
+        overflow: auto;
+      }
+      #status {
+        color: #a0a0a6;
+        font-size: 12px;
+        margin: 12px 0 0;
+        line-height: 1.5;
+      }
+      #status:empty {
+        display: none;
+      }
+      @media (max-width: 640px) {
+        .app {
+          padding: 22px 16px;
+        }
+        header {
+          margin-bottom: 23px;
+        }
+        h1 {
+          font-size: 25px;
+        }
+        .subtitle {
+          max-width: 235px;
+          font-size: 12px;
+        }
+        .repo-name {
+          max-width: 120px;
+          font-size: 12px;
+        }
+        .branch {
+          max-width: 120px;
+          overflow-wrap: anywhere;
+          font-size: 10px;
+        }
+        .row {
+          padding: 16px 13px;
+          gap: 9px;
+          grid-template-columns: 16px minmax(0, 1fr);
+        }
+        .row + .row:after {
+          left: 38px;
+          right: 13px;
+        }
+        .join,
+        .boundary {
+          grid-column: 2;
+          justify-self: start;
+        }
+        .rail {
+          grid-row: 1 / 3;
+        }
+        .rail:before {
+          top: -16px;
+          bottom: -16px;
+        }
+        .subject {
+          font-size: 13px;
+        }
+        .actions {
+          align-items: flex-start;
+        }
+        .confirm {
+          padding: 11px 14px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition: none !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header>
+        <div>
+          <div class="title">
+            <svg class="mark" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+              <path d="M7 5v7a7 7 0 0 0 7 7h7M21 5v14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" />
+              <circle cx="7" cy="5" r="2.5" fill="black" stroke="currentColor" stroke-width="1.7" />
+              <circle cx="21" cy="5" r="2.5" fill="black" stroke="currentColor" stroke-width="1.7" />
+              <circle cx="21" cy="21" r="3" fill="currentColor" />
+            </svg>
+            <h1>Ravel</h1>
+          </div>
+          <p class="subtitle">A cleaner history. One commit at a time.</p>
+        </div>
+        <div class="repo">
+          <div class="repo-heading">
+            <span class="repo-name" id="repository"></span
+            ><span class="repo-info" id="repo-info"
+              ><button
+                class="info-button"
+                id="repo-info-button"
+                aria-label="Show repository path"
+                aria-describedby="repo-path"
+              >
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                  <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2" />
+                  <path d="M8 7v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+                  <circle cx="8" cy="4.7" r=".8" fill="currentColor" />
+                </svg></button
+              ><span class="repo-path" id="repo-path" role="tooltip"></span
+            ></span>
+          </div>
+          <div class="branch" id="branch"></div>
+        </div>
+      </header>
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <span id="commit-count"></span><span class="dot"></span
+          ><span title="Shows the current branch's first-parent chain. Merges stay separate."
+            >Newest first · First-parent</span
+          >
+        </div>
+        <button class="quiet" id="reset" disabled>Reset</button>
+      </div>
+      <section class="history" id="history" aria-label="Git commit chain"></section>
+      <footer>
+        <div class="actions">
+          <div aria-live="polite">
+            <div class="summary-count" id="selection">Choose commits to combine</div>
+            <div class="summary-hint" id="hint">Squash an older commit into the one above.</div>
+          </div>
+          <button class="confirm" id="confirm" disabled>Confirm</button>
+        </div>
+        <p id="status" role="status"></p>
+        <details id="preview" hidden>
+          <summary>Preview instruction</summary>
+          <pre id="prompt"></pre>
+        </details>
+      </footer>
+    </main>
+    <script>
+      /* RAVEL_MODEL */
+      const data = /* RAVEL_DATA */ null;
+      const joins = new Set();
+      const history = document.getElementById('history');
+      const confirmButton = document.getElementById('confirm');
+      const resetButton = document.getElementById('reset');
+      const status = document.getElementById('status');
+      let sending = false;
+      let handedOff = false;
+
+      /** When rendering repository text, use text nodes so Git metadata stays inert. */
+      function element(tag, className, text) {
+        const node = document.createElement(tag);
+        node.className = className;
+        if (text !== undefined) node.textContent = text;
+        return node;
+      }
+
+      /** When a group changes, redraw the commit chain and exact generated instruction. */
+      function update() {
+        const focused = document.activeElement?.dataset.index;
+        const scroll = history.scrollTop;
+        const groups = squashGroups(data.commits, joins);
+        history.replaceChildren();
+        data.commits.forEach(function (commit, index) {
+          const group = groups.find(function (item) {
+            return item.target.hash === commit.hash;
+          });
+          const row = element('article', 'row' + (joins.has(index) ? ' joined' : '') + (group ? ' target' : ''));
+          const rail = element('div', 'rail');
+          rail.setAttribute('aria-hidden', 'true');
+          rail.append(element('span', 'node'));
+          const content = element('div', 'content');
+          content.append(element('div', 'subject', commit.subject || '(no commit message)'));
+          const meta = element('div', 'meta');
+          const hash = element('code', '', commit.hash.slice(0, 7));
+          hash.title = commit.hash;
+          meta.append(hash, element('span', '', commit.date.slice(0, 10)));
+          if (!index) meta.append(element('span', 'badge', 'HEAD'));
+          if (commit.parents.length > 1) meta.append(element('span', 'badge', 'MERGE'));
+          if (group) meta.append(element('span', 'badge', '+' + group.sources.length + ' INTO THIS'));
+          if (joins.has(index))
+            meta.append(element('span', '', 'Into ' + data.commits[targetIndex(joins, index)].hash.slice(0, 7)));
+          content.append(meta);
+          row.append(rail, content);
+          if (canJoin(data.commits, index)) {
+            const target = data.commits[targetIndex(joins, index - 1)].hash.slice(0, 7);
+            const button = element('button', 'join', joins.has(index) ? 'Undo' : '↑ Into ' + target);
+            button.dataset.index = index;
+            button.disabled = sending;
+            button.setAttribute('aria-pressed', String(joins.has(index)));
+            button.setAttribute(
+              'aria-label',
+              joins.has(index)
+                ? 'Undo squash of ' + commit.hash.slice(0, 7)
+                : 'Squash ' + commit.hash.slice(0, 7) + ' into above ' + target
+            );
+            button.onclick = function () {
+              if (joins.has(index)) joins.delete(index);
+              else joins.add(index);
+              handedOff = false;
+              status.textContent = '';
+              update();
+            };
+            row.append(button);
+          } else if (index) row.append(element('span', 'boundary', 'Merge boundary'));
+          history.append(row);
+        });
+        if (data.hasMore)
+          history.append(
+            element(
+              'div',
+              'end-note',
+              'Showing the latest ' + data.commits.length + ' commits. Ask Codex to load more history.'
+            )
+          );
+        if (!data.hasMore && data.commits.length < 2)
+          history.append(element('div', 'end-note', 'This branch has one commit. There is nothing to squash yet.'));
+        history.scrollTop = scroll;
+        if (focused !== undefined) history.querySelector('[data-index="' + focused + '"]')?.focus({ preventScroll: true });
+        document.getElementById('selection').textContent = joins.size
+          ? joins.size +
+            ' commit' +
+            (joins.size === 1 ? '' : 's') +
+            ' into ' +
+            groups.length +
+            ' target' +
+            (groups.length === 1 ? '' : 's')
+          : 'Choose commits to combine';
+        document.getElementById('hint').textContent = joins.size
+          ? 'Confirm sends your instruction to Codex.'
+          : 'Squash an older commit into the one above.';
+        document.getElementById('preview').hidden = !joins.size;
+        document.getElementById('prompt').textContent = buildPrompt(data, joins);
+        confirmButton.disabled = !joins.size || sending || handedOff;
+        confirmButton.textContent = handedOff ? 'Review in Codex' : 'Confirm';
+        resetButton.disabled = !joins.size || sending;
+      }
+
+      resetButton.onclick = function () {
+        joins.clear();
+        handedOff = false;
+        status.textContent = '';
+        update();
+      };
+
+      /** When Confirm receives a user click, send the selected instruction into this Codex task. */
+      confirmButton.onclick = async function () {
+        if (sending || handedOff || !joins.size) return;
+        if (typeof window.openai?.sendFollowUpMessage !== 'function') {
+          status.textContent =
+            'Open this picker inside Codex to send the instruction. Your selection is available under Preview instruction.';
+          document.getElementById('preview').open = true;
+          return;
+        }
+        const prompt = buildPrompt(data, joins);
+        sending = true;
+        update();
+        confirmButton.textContent = 'Sending…';
+        try {
+          await window.openai.sendFollowUpMessage({ prompt });
+          sending = false;
+          handedOff = true;
+          update();
+          status.textContent = 'Review the request in Codex. You can edit or reset this selection to send a new request.';
+        } catch (error) {
+          sending = false;
+          confirmButton.textContent = 'Confirm';
+          status.textContent = 'Could not send to Codex. Your selection is saved here; try Confirm again.';
+          update();
+        }
+      };
+
+      document.getElementById('repository').textContent = data.name;
+      document.getElementById('repository').title = data.repository;
+      document.getElementById('repo-path').textContent = data.repository;
+      document.getElementById('repo-info-button').onclick = function () {
+        const info = document.getElementById('repo-info');
+        info.dataset.open = String(info.dataset.open !== 'true');
+      };
+      document.addEventListener('pointerdown', function (event) {
+        const info = document.getElementById('repo-info');
+        if (!info.contains(event.target)) info.dataset.open = 'false';
+      });
+      document.getElementById('repo-info-button').onkeydown = function (event) {
+        if (event.key === 'Escape') {
+          document.getElementById('repo-info').dataset.open = 'false';
+          event.currentTarget.blur();
+        }
+      };
+      document.getElementById('branch').textContent = '⑂ ' + (data.branch === 'HEAD' ? 'Detached HEAD' : data.branch);
+      document.getElementById('commit-count').textContent = data.commits.length + ' commits';
+      update();
+    </script>
+  </body>
+</html>
