@@ -72,6 +72,24 @@ class RenderTests(unittest.TestCase):
         self.git("checkout", "--detach")
         self.assertEqual(renderer.snapshot(self.repo, 200)["branch"], "HEAD")
 
+    def test_output_preserves_authorized_symlink_path(self):
+        self.commit("initial")
+        actual = Path(self.temp.name) / "actual"
+        actual.mkdir()
+        alias = Path(self.temp.name) / "authorized"
+        alias.symlink_to(actual, target_is_directory=True)
+        output = alias / "ravel.html"
+        from contextlib import redirect_stdout
+        from io import StringIO
+        printed = StringIO()
+        with redirect_stdout(printed):
+            renderer.render(renderer.snapshot(self.repo, 200), output)
+        self.assertEqual(printed.getvalue().strip(), str(output))
+        html = output.read_text(encoding="utf-8")
+        for tag in ("<!doctype", "<html", "<head>", "<body"):
+            self.assertNotIn(tag, html.lower())
+        self.assertIn('id="ravel-app"', html)
+
     def test_empty_repository_reports_error(self):
         with self.assertRaises(ValueError):
             renderer.snapshot(self.repo, 200)

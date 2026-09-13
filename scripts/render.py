@@ -3,6 +3,7 @@
 
 import argparse
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -46,7 +47,7 @@ def render(data, output):
     html = (assets / "ravel.html").read_text(encoding="utf-8")
     html = html.replace("/* RAVEL_MODEL */", (assets / "model.js").read_text(encoding="utf-8"))
     html = html.replace("/* RAVEL_DATA */ null", serialized)
-    output = Path(output).expanduser().resolve()
+    output = Path(os.path.abspath(Path(output).expanduser()))
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(html, encoding="utf-8")
     print(str(output))
