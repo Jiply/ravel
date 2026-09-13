@@ -43,12 +43,12 @@ def render(data, output):
     """Embed repository data and the UI into one offline HTML file."""
     assets = Path(__file__).resolve().parent.parent / "assets"
     serialized = json.dumps(data, ensure_ascii=True).replace("<", "\\u003c")
-    html = (assets / "ravel.html").read_text()
-    html = html.replace("/* RAVEL_MODEL */", (assets / "model.js").read_text())
+    html = (assets / "ravel.html").read_text(encoding="utf-8")
+    html = html.replace("/* RAVEL_MODEL */", (assets / "model.js").read_text(encoding="utf-8"))
     html = html.replace("/* RAVEL_DATA */ null", serialized)
     output = Path(output).expanduser().resolve()
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(html)
+    output.write_text(html, encoding="utf-8")
     print(str(output))
 
 

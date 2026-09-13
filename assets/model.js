@@ -56,5 +56,3 @@ function buildPrompt(data, joins) {
     'Preserve uncommitted work. Stop if the working tree is dirty or a Git operation is in progress. Create a backup ref before rewriting, verify the final tree and selected groups afterward, and do not push.',
   ].join('\n');
 }
-
-if (typeof module !== 'undefined') module.exports = { canJoin, targetIndex, squashGroups, buildPrompt };

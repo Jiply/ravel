@@ -1,0 +1,12 @@
+{
+  "name": "ravel",
+  "interface": { "displayName": "Ravel" },
+  "plugins": [
+    {
+      "name": "ravel",
+      "category": "Productivity",
+      "source": { "source": "local", "path": "./" },
+      "policy": { "installation": "AVAILABLE", "authentication": "ON_INSTALL" }
+    }
+  ]
+}
