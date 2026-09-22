@@ -1,6 +1,6 @@
 {
   "name": "ravel",
-  "version": "0.1.0+codex.20260913100439",
+  "version": "0.1.0+codex.20260922081251",
   "description": "Visually group Git commits and send a precise squash instruction to Codex.",
   "author": { "name": "Jiply (Jeremy Soo)" },
   "skills": "./skills/",
