@@ -19,6 +19,8 @@ If rendering fails, report the actual error; do not show demo history. If the ho
 
 ## Inline read preflight
 
+Run this preflight **before** invoking the renderer. Resolve the task workspace and UUID from the active task context, not from saved configuration. Create `.codex-visualizations/<task-uuid>/` as private directories. In a Git workspace, locate its local exclude file with `git rev-parse --git-path info/exclude`, add a `.codex-visualizations/` rule if absent, and verify the destination is ignored and untracked. Preserve existing exclude rules; never untrack an existing file automatically. Do not require the author's shared staging utility or agent baseline.
+
 Use an absolute normalized path inside the active task workspace, independent of billing-account homes. Desktop reads from the task’s execution host; a Mac path is not a path on a remote worker. Account changes must not change the output location for the same task and workspace.
 
 Verify the workspace and every artifact directory below it are real directories, and the HTML is a regular non-symlink file smaller than 1 MB with a lowercase hyphenated basename. Keep snapshots untracked and ignored; use a local Git exclude if needed. Emit the absolute JSON visualization reference only after these checks.

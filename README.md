@@ -24,7 +24,7 @@ codex plugin marketplace add .
 codex plugin add ravel@ravel
 ```
 
-The included marketplace points at this checkout. Keep it available for updates. Cloning alone does not install the plugin. While the GitHub repository is private, cloning requires repository access.
+The included marketplace points at this checkout. Keep it available for updates. Cloning alone does not install the plugin.
 
 Restart Desktop and start a new task in the project you want to work on. Select Ravel from the `/` skill picker, or send:
 
@@ -38,11 +38,17 @@ The task's project is the target, not the Ravel checkout. Codex uses the current
 Use $ravel for the repository at ./my-project.
 ```
 
-Hover or focus the information icon beside the repository name to check the full path. The branch is shown beneath it. Install separately in each Codex profile you want to use; an existing task may not discover a newly installed skill.
+Hover or focus the information icon beside the repository name to check the full path. The branch is shown beside it. Install separately in each Codex profile you want to use; an existing task may not discover a newly installed skill.
+
+## First use
+
+For a safe first try, open a disposable Git repository with at least two adjacent non-merge commits. Invoke Ravel, check the repository name and path, select **↑ Into**, and expand **Preview prompt**. Stop before Confirm if you only want to inspect the UI. Opening the picker and changing selections do not alter Git history.
+
+Codex saves the private picker under `.codex-visualizations/<task-id>/` inside the project opened for that task. The skill prepares a local Git ignore rule before rendering; no global agent package or personal CLI manager is required. Keep the generated files private. For remote tasks, Git, Python, the plugin, and the target repository must be available on the remote execution host; local installation alone does not install them remotely.
 
 ## Shape the history
 
-Select **↑ Into** on an older commit to combine it with the newer group above. Use **Undo** or **Reset** to change the selection, inspect **Preview instruction**, then select **Confirm**.
+Select **↑ Into** on an older commit to combine it with the newer group above. Use **Undo** or **Reset** to change the selection, inspect **Preview prompt**, then select **Confirm**.
 
 The picker reads the current branch's first-parent chain, newest first. Merge commits form boundaries. It loads 200 commits by default; ask Codex to load more, up to 5,000.
 
@@ -70,7 +76,8 @@ codex plugin marketplace remove ravel
 - **Ravel is missing:** run `codex plugin list`, check that it is installed and enabled in the same profile as Desktop, then restart and open a new task. Upgrade the CLI if it does not recognize `plugin`.
 - **Wrong repository:** supply the target path explicitly and check the path information icon before selecting commits.
 - **No history:** the target must be a local Git repository with at least one commit. Two adjacent non-merge commits are needed to form a squash group.
-- **Picker or Confirm unavailable:** the host must support both inline visualizations and the follow-up bridge. Preview instruction remains readable when the bridge is missing; it does not mean a request was sent. Browser previews and CLI sessions are not substitutes for the Desktop bridge.
+- **Picker or Confirm unavailable:** the host must support both inline visualizations and the follow-up bridge. Preview prompt remains readable when the bridge is missing; it does not mean a request was sent. Browser previews and CLI sessions are not substitutes for the Desktop bridge.
+- **Invalid visualization read request:** ask Codex to rerun Ravel in the current task workspace and display a fresh reference. Reopening an old reference retains its old path. The artifact directory must not use symlinks.
 - **Cover missing:** run `git lfs pull`. The artwork is optional for functionality.
 
 The local marketplace installation is tested with Codex CLI 0.153.4 on macOS. The UI has been exercised in Codex Desktop and in browser tests with a simulated bridge. Compatibility with every Desktop version, account, operating system, or managed workspace is not established. See the [official plugin setup documentation](https://developers.openai.com/plugins/build/plugins) for host installation details.
