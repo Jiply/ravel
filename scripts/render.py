@@ -5,8 +5,10 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
+import tempfile
 
 
 def git(repo, *args):
@@ -48,8 +50,34 @@ def render(data, output):
     html = html.replace("/* RAVEL_MODEL */", (assets / "model.js").read_text(encoding="utf-8"))
     html = html.replace("/* RAVEL_DATA */ null", serialized)
     output = Path(os.path.abspath(Path(output).expanduser()))
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*\.html", output.name):
+        raise ValueError("Use a lowercase hyphenated HTML filename")
+    if any(part.is_symlink() for part in (output, *output.parents)):
+        raise ValueError("Output paths must not contain symlinks; use the real task workspace")
+    if len(html.encode("utf-8")) >= 1_000_000:
+        raise ValueError("Inline snapshot exceeds 1 MB; reduce --limit")
+    parent = output.parent
+    while not parent.exists():
+        parent = parent.parent
+    repository = subprocess.run(["git", "-C", str(parent), "rev-parse", "--show-toplevel"],
+                                capture_output=True, text=True)
+    if repository.returncode and "not a git repository" not in repository.stderr:
+        raise ValueError("Git privacy check failed")
+    if not repository.returncode:
+        root = repository.stdout.strip()
+        tracked = subprocess.run(["git", "-C", root, "ls-files", "--error-unmatch", str(output)], capture_output=True)
+        ignored = subprocess.run(["git", "-C", root, "check-ignore", "-q", str(output)], capture_output=True)
+        if tracked.returncode == 0 or ignored.returncode != 0:
+            raise ValueError("Output must be untracked and ignored by Git")
     output.parent.mkdir(parents=True, exist_ok=True)
-    output.write_text(html, encoding="utf-8")
+    descriptor, temporary = tempfile.mkstemp(prefix=".ravel-", dir=output.parent)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as stream:
+            stream.write(html)
+        os.replace(temporary, output)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
     print(str(output))
 
 
