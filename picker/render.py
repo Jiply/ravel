@@ -44,10 +44,10 @@ def snapshot(repo, limit):
 
 def render(data, output):
     """Embed repository data and the UI into one offline HTML file."""
-    assets = Path(__file__).resolve().parent.parent / "assets"
+    picker = Path(__file__).resolve().parent
     serialized = json.dumps(data, ensure_ascii=True).replace("<", "\\u003c")
-    html = (assets / "ravel.html").read_text(encoding="utf-8")
-    html = html.replace("/* RAVEL_MODEL */", (assets / "model.js").read_text(encoding="utf-8"))
+    html = (picker / "template.html").read_text(encoding="utf-8")
+    html = html.replace("/* RAVEL_MODEL */", (picker / "model.js").read_text(encoding="utf-8"))
     html = html.replace("/* RAVEL_DATA */ null", serialized)
     output = Path(os.path.abspath(Path(output).expanduser()))
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*\.html", output.name):

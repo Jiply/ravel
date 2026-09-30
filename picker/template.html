@@ -467,6 +467,9 @@
     const confirmButton = root.querySelector('#confirm');
     const resetButton = root.querySelector('#reset');
     const status = root.querySelector('#status');
+    const preview = root.querySelector('#preview');
+    const repoInfo = root.querySelector('#repo-info');
+    const repoInfoButton = root.querySelector('#repo-info-button');
     let sending = false;
     let handedOff = false;
 
@@ -483,11 +486,11 @@
       const focused = document.activeElement?.dataset.index;
       const scroll = history.scrollTop;
       const groups = squashGroups(data.commits, joins);
+      const groupsByTargetHash = new Map();
+      for (const group of groups) groupsByTargetHash.set(group.target.hash, group);
       history.replaceChildren();
       data.commits.forEach(function (commit, index) {
-        const group = groups.find(function (item) {
-          return item.target.hash === commit.hash;
-        });
+        const group = groupsByTargetHash.get(commit.hash);
         const row = element('article', 'row' + (joins.has(index) ? ' joined' : '') + (group ? ' target' : ''));
         const rail = element('div', 'rail');
         rail.setAttribute('aria-hidden', 'true');
@@ -554,7 +557,7 @@
           ' target' +
           (groups.length === 1 ? '' : 's')
         : '0 selected';
-      root.querySelector('#preview').hidden = !joins.size;
+      preview.hidden = !joins.size;
       root.querySelector('#prompt').value = buildPrompt(data, joins);
       confirmButton.disabled = !joins.size || sending || handedOff;
       confirmButton.textContent = handedOff ? 'Review in Codex' : 'Confirm';
@@ -574,7 +577,7 @@
       if (typeof window.openai?.sendFollowUpMessage !== 'function') {
         status.textContent =
           'Open this picker inside Codex to send the instruction. Your selection is available under Preview prompt.';
-        root.querySelector('#preview').open = true;
+        preview.open = true;
         return;
       }
       const prompt = buildPrompt(data, joins);
@@ -598,17 +601,15 @@
     root.querySelector('#repository').textContent = data.name;
     root.querySelector('#repository').title = data.repository;
     root.querySelector('#repo-path').textContent = data.repository;
-    root.querySelector('#repo-info-button').onclick = function () {
-      const info = root.querySelector('#repo-info');
-      info.dataset.open = String(info.dataset.open !== 'true');
+    repoInfoButton.onclick = function () {
+      repoInfo.dataset.open = String(repoInfo.dataset.open !== 'true');
     };
     document.addEventListener('pointerdown', function (event) {
-      const info = root.querySelector('#repo-info');
-      if (!info.contains(event.target)) info.dataset.open = 'false';
+      if (!repoInfo.contains(event.target)) repoInfo.dataset.open = 'false';
     });
-    root.querySelector('#repo-info-button').onkeydown = function (event) {
+    repoInfoButton.onkeydown = function (event) {
       if (event.key === 'Escape') {
-        root.querySelector('#repo-info').dataset.open = 'false';
+        repoInfo.dataset.open = 'false';
         event.currentTarget.blur();
       }
     };
